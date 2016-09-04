@@ -1,10 +1,10 @@
-function p = msi(Xnew,Xtemplate)
+function score = msi(Xnew,Xtemplate)
 % Xnew [samples, channels]
 % Xtemplate [freq, samples, channels]
 if ismatrix(Xtemplate)
     Xtemplate = reshape(Xtemplate,[1 size(Xtemplate)]);
 end
-p = zeros(size(Xtemplate,1),1);
+score = zeros(size(Xtemplate,1),1);
 Nsample = size(Xnew,1);
 Xnew = normalizeSignal(Xnew,1);
 Xtemplate = normalizeSignal(Xtemplate,2);
@@ -12,8 +12,8 @@ dimOne = size(Xnew,2);
 dimTwo = size(Xtemplate,3);
 dimA = dimOne + dimTwo;
 for freq = 1:size(Xtemplate,1)
-    subRef = squeeze(Xtemplate(freq,:,:));
-    intSignal = [Xnew';subRef']';
+    Y = squeeze(Xtemplate(freq,:,:));
+    intSignal = [Xnew';Y']';
     C = 1/Nsample*(intSignal'*intSignal);
     Cx = C(1:dimOne,1:dimOne);
     Cy = C(dimOne+1:dimA,dimOne+1:dimA);
@@ -22,7 +22,7 @@ for freq = 1:size(Xtemplate,1)
     R = U*C*U';
     lamda = eig(R);
     nlamda = lamda/sum(lamda);
-    p(freq) = 1 + sum(bsxfun(@times,nlamda,log(nlamda)))/log(dimA);
+    score(freq) = 1 + sum(bsxfun(@times,nlamda,log(nlamda)))/log(dimA);
 end
 end
 
