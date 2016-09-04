@@ -1,8 +1,8 @@
-clear;clc;
+clearvars -except method;clc;
 %% Testing parameter
 % time = 1;
 % Nh = 1;
-method = 'MEC_AR';
+% method = 'MEC_AR';
 % nameDataset = 'UCSDDataset';
 nameDataset = 'JanirDataset';
 filterOn = false;
@@ -46,10 +46,10 @@ for Nhidx = 1:length(NhSeq)
                     switch method
                         case 'MEC_AR'
                             lambda = 0.1; p = 10; alpha = 0;
-                            score = mec(Xnew, sinTemplate, fsample, Nh, lamda, stimuFreq, p, alpha);
+                            score = mec(Xnew, sinTemplate, fsample, Nh, lambda, stimuFreq, p, alpha);
                         case 'MEC1'
                             lambda = 0.1; p = 0; alpha = 0.25;
-                            score = mec(Xnew, sinTemplate, fsample, Nh, lamda, stimuFreq, p, alpha);                            
+                            score = mec(Xnew, sinTemplate, fsample, Nh, lambda, stimuFreq, p, alpha);                            
                         case 'CCA'
                             score = ccaExtend(Xnew,sinTemplate,sinTemplate,'CCA');
                         case 'MCC_AR'

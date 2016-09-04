@@ -7,9 +7,9 @@ function score = dpls(Xnew, Xtemplate)
 score = zeros(size(Xtemplate,1),1);
 for freq = 1:size(Xtemplate,1)
     Y = squeeze(Xtemplate(freq,:,:));
-    W = plsregress(Xnew,Y,size(Y,2));
-    B = plsregress(Y,Xnew*W,size(Y,2));
-    score(freq) = sum(sum(abs(B)));
+    [~,~,~,~,W] = plsregress(Xnew,Y,size(Y,2));
+    [~,~,~,~,B] = plsregress(Y,[ones(size(Xnew,1),1), Xnew]*W(1:end,:),size(Y,2));
+    score(freq) = sum(sum(abs(B(2:end,:))));
 end
 
 % Ge, S., Wang, R., Leng, Y., Wang, H., Lin, P., Iramina, K.: A Double-Partial 
