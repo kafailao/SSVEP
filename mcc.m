@@ -1,4 +1,4 @@
-function score = mec(Xnew, Xtemplate, fsample, Nharmonic, lamda, stimuFreq, p, alpha)
+function score = mcc(Xnew, Xtemplate, fsample, Nharmonic, stimuFreq, p, alpha)
 % [Input]
 % Xnew [samples,channels]: Test EEG data
 % Xtemplate [freq,samples,channels]: SSVEP related components, can be
@@ -24,11 +24,13 @@ for freq = 1:size(Xtemplate,1)
     Xssvep = squeeze(Xtemplate(freq,:,:));
     % Remove potential SSVEP components at ith frequency
     Xnoise = Xnew - Xssvep*inv(Xssvep'*Xssvep)*Xssvep'*Xnew;
-    [eigVector,~,eigValue] = princomp(Xnoise);
-    idx = cumsum(eigValue)/sum(eigValue) > (1 - lamda);
+    [eigVector,eigValue] = eig(Xnew'*Xnew,Xnoise'*Xnoise);
+%     assignin('base','eigValue',eigValue);
+    eigValue = diag(eigValue);
+    idx = eigValue > 1;
     eigVector = bsxfun(@rdivide,eigVector,sqrt(eigValue)');
     W = eigVector(:,idx);
-    s = Xnew*W; % MEC filtered EEG signal
+    s = Xnew*W; % MCC filtered EEG signal
     sNoise = Xnoise*W; % Noise in filtered signal
     recScore = zeros(Nharmonic,size(s,2));
 
