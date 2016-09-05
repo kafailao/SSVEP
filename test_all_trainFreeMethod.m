@@ -37,7 +37,7 @@ for Nhidx = 1:length(NhSeq)
         % Artifical(sinusoidal template)
         sinTemplate = genSinTemplate(stimuFreq,fsample,time,Nh);
         startIdx = 0; %%%%%%%%%%%%%%%%%%
-        if strcmp(method,'TMSI'), W = TukeysWeight(time*fsample,tau,r); end;
+        if strcmp(method,'TMSI'), tau = 24; r = 3; W = TukeysWeight(time*fsample,tau,r); end;
         rec = zeros(numSubject,1);
         for targetSubject = 1:numSubject
             ssvep = allData{targetSubject};
@@ -65,7 +65,6 @@ for Nhidx = 1:length(NhSeq)
                         case 'MSI'
                             score = msi(Xnew, sinTemplate);
                         case 'TMSI'
-                            tau = 24; r = 3;
                             score = tmsi(Xnew,sinTemplate,W);
                         case 'LASSO'
                             lambda = 0.1;
