@@ -7,17 +7,18 @@ subApproach = 'IndexMinMSE';
 numSubject = 28;
 subjectSeq = 1:numSubject;
 freqLength = 10;
+trialLength = 5;
 nF = 2;
 
 rec_BetaRatio = zeros(length(NhSeq),length(timeSeq),numSubject,freqLength);
 rec_confusion = zeros(length(NhSeq),length(timeSeq),numSubject,freqLength,freqLength);
 for Nhidx = 1:length(NhSeq)
     Nh = NhSeq(Nhidx);
+    acc = zeros(numSubject+2,length(timeSeq));
     for tidx = 1:length(timeSeq)
         time = timeSeq(tidx);
         load(['Feature\' sprintf('ECCA3_%s_Nh%d_time%d.mat',nameDataset,Nh,time*10)]);        
         rec = zeros(numSubject,1);
-        acc = zeros(numSubject+2,length(timeSeq));
         Beta = zeros((numSubject-1)*nF+1,freqLength);
         for targetSubject = 1:numSubject
             %% Use LASSO to combine feature toward
@@ -35,7 +36,7 @@ for Nhidx = 1:length(NhSeq)
                 Beta(:,freq) = B(:, FitInfo.IndexMinMSE);
                 %         Beta(:,freq) = B(:,FitInfo.Index1SE);
             end
-            rec_BetaRatio(Nhidx,tidx,targetSubjet,:) = Beta(1,:)/Sum(abs(Beta));
+            rec_BetaRatio(Nhidx,tidx,targetSubject,:) = Beta(1,:)/sum(abs(Beta));
             
             %% Recognition
             coef = squeeze(featureSet(targetSubject,:,:,:));
@@ -72,8 +73,9 @@ for Nhidx = 1:length(NhSeq)
     end
     row_header{numSubject+1} = 'Mean';
     row_header{numSubject+2} = 'Std';
-    filename = [method '_' subApproach '_' nameDataset '.xlsx'];
+    filename = ['Result\' method '_' subApproach '_' nameDataset '.xlsx'];
     xlswrite(filename,acc,sprintf('Nh = %d',Nh),'B2');     %Write data
     xlswrite(filename,col_header,sprintf('Nh = %d',Nh),'B1');     %Write column header
     xlswrite(filename,row_header,sprintf('Nh = %d',Nh),'A2');      %Write row header
 end
+save(['Result\' method '_' subApproach '_' nameDataset '_confusion.mat'],'rec_confusion','rec_BetaRatio');

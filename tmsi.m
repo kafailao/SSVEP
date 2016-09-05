@@ -1,4 +1,4 @@
-function score = tmsi(Xnew,Xtemplate,tau,r)
+function score = tmsi(Xnew,Xtemplate,W)
 % Xnew [samples, channels]
 % Xtemplate [freq, samples, channels]
 % tau: temporally local range, constant
@@ -20,7 +20,7 @@ dimA = dimOne + dimTwo;
 for freq = 1:size(Xtemplate,1)
     Y = squeeze(Xtemplate(freq,:,:));
     Z = [Xnew';Y']';
-    W = TukeysWeight(Nsample,tau,r);
+%     W = TukeysWeight(Nsample,tau,r);
     D = diag(sum(W,2));
     L = (D - W)';
     C = 1/Nsample*(Z'*L*Z);
@@ -32,19 +32,5 @@ for freq = 1:size(Xtemplate,1)
     lamda = eig(R);
     nlamda = lamda/sum(lamda);
     score(freq) = 1 + sum(bsxfun(@times,nlamda,log(nlamda)))/log(dimA);
-end
-end
-
-function W = TukeysWeight(Nsample,tau,r)
-W = zeros(Nsample);
-for i = 1:Nsample
-    for j = 1:Nsample
-        v = (j - i)/tau;
-        if abs(v) < 1
-            W(i,j) = (1 - abs(v)^r)^r;
-        else
-            W(i,j) = 0;
-        end
-    end
 end
 end
