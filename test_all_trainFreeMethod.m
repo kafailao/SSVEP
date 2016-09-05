@@ -1,4 +1,4 @@
-clearvars -except method;clc;
+clearvars -except list method;clc;
 %% Testing parameter
 % time = 1;
 % Nh = 1;
@@ -28,6 +28,7 @@ subjectSeq = 1:numSubject;
 %% Recognition
 timeSeq = 0.5:0.5:3.5;
 NhSeq = 1:3;
+rec_confusion = zeros(length(NhSeq),length(timeSeq),numSubject,freqLength,freqLength);
 for Nhidx = 1:length(NhSeq)
     Nh = NhSeq(Nhidx);
     acc = zeros(numSubject+2,length(timeSeq));
@@ -35,7 +36,7 @@ for Nhidx = 1:length(NhSeq)
         time = timeSeq(tidx);   
         % Artifical(sinusoidal template)
         sinTemplate = genSinTemplate(stimuFreq,fsample,time,Nh);
-        startIdx = 0; %%%%%%%%%%%%%%%%%%5
+        startIdx = 0; %%%%%%%%%%%%%%%%%%
         
         rec = zeros(numSubject,1);
         for targetSubject = 1:numSubject
@@ -76,6 +77,7 @@ for Nhidx = 1:length(NhSeq)
                     end     
                     [~,maxLoc] = max(score);
                     if maxLoc == freq, rec(targetSubject) = rec(targetSubject) + 1; end;
+                    rec_confusion(Nhidx,tidx,targetSubject,freq,maxLoc) = rec_confusion(Nhidx,tidx,targetSubject,freq,maxLoc) + 1;
                 end
             end
             fprintf('Accuracy of S%d: %.2f\n',targetSubject,rec(targetSubject)/(trialLength*freqLength));
@@ -98,3 +100,4 @@ for Nhidx = 1:length(NhSeq)
     xlswrite(filename,col_header,sprintf('Nh = %d',Nh),'B1');     %Write column header
     xlswrite(filename,row_header,sprintf('Nh = %d',Nh),'A2');      %Write row header
 end
+save(['Result\' method '_' nameDataset '_confusion.mat'],'rec_confusion');
