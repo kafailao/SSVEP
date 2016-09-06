@@ -1,8 +1,8 @@
 clear;clc;
 %% Testing parameter
 nameDataset = 'JanirDataset';
+method = 'TMSI';
 filterOn = false;
-nF = 2; % Number of features estimate from each template
 %% Initialization
 loadDataTime = 4;
 readmeFileName = 'readme.txt';
@@ -45,6 +45,13 @@ for Nhidx = 1:length(NhSeq)
         time = timeSeq(tidx);
         % Artifical(sinusoidal template)
         sinTemplate = genSinTemplate(stimuFreq,fsample,time,Nh);
+        switch method
+            case 'ECCA3'
+                nF = 2;
+            case 'TMSI'
+                nF = 1;
+                W = TukeysWeight(time*fsample,24,3);
+        end
         %% Extract features for all data (including test data)
         % featureSet: [testSubject,size of data, views, features]
         % Each subject provide nF views on the input data + one view from
@@ -60,22 +67,29 @@ for Nhidx = 1:length(NhSeq)
                 for trial = 1:trialLength
                     for freq = 1:freqLength
                         Xnew = squeeze(ssvep(trial,freq,startIdx+1:startIdx+time*fsample,:));
-                        [~,pvec] = ccaExtend(Xnew,Xtemplate,sinTemplate,'Combination3');
-                        if nF == 1
-                            p = sign(pvec(:,1)).*pvec(:,1).^2 + sign(pvec(:,3)).*pvec(:,3).^2;
-                            featureSet(testSubject,(trial - 1)*freqLength + freq,templateSubject+1,:) = p;
-                        elseif nF == 2
+                        % Test different feature extraction methods
+                        switch method
+                            case 'ECCA3'
+                            [~,pvec] = ccaExtend(Xnew,Xtemplate,sinTemplate,'Combination3');
                             featureSet(testSubject,(trial - 1)*freqLength + freq,(templateSubject-1)*nF+2,:) = sign(pvec(:,1)).*pvec(:,1).^2;
                             featureSet(testSubject,(trial - 1)*freqLength + freq,templateSubject*nF+1,:) = sign(pvec(:,3)).*pvec(:,3).^2;
+                            if templateSubject == 1
+                                featureSet(testSubject,(trial - 1)*freqLength + freq,1,:) = sign(pvec(:,2)).*pvec(:,2).^2;
+                            end
+                            case 'TMSI'
+                                p = tmsi(Xnew,Xtemplate,W);
+                                featureSet(testSubject,(trial - 1)*freqLength + freq,1+templateSubject,:) = p;
+                            if templateSubject == 1
+                                p = tmsi(Xnew,sinTemplate,W);
+                                featureSet(testSubject,(trial - 1)*freqLength + freq,1,:) = p;
+                            end                                
                         end
-                        if templateSubject == 1
-                            featureSet(testSubject,(trial - 1)*freqLength + freq,1,:) = sign(pvec(:,2)).*pvec(:,2).^2;
-                        end
+                        %%%%%%%%%%%%%%%%%%%%%%%%%%
                     end
                 end
             end
         end
-        save(['Feature\' sprintf('ECCA3_%s_Nh%d_time%d.mat',nameDataset,Nh,time*10)],'featureSet','label');
-        fprintf(sprintf('Have saved ECCA3_%s_Nh%d_time%d.mat\n',nameDataset,Nh,time*10));
+        save(['Feature\' sprintf('%s_%s_Nh%d_time%d.mat',method,nameDataset,Nh,time*10)],'featureSet','label');
+        fprintf(sprintf('Have saved %s_%s_Nh%d_time%d.mat\n',method,nameDataset,Nh,time*10));
     end
 end
