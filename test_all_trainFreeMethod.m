@@ -15,6 +15,10 @@ readmeFileName = 'readme.txt';
 % allData: SSVEP data in cell format
 % allData{j} contains SSVEP data from j^th subject
 [allData,stimuFreq,fsample,dataSize] = prepareData(loadDataTime,nameDataset,readmeFileName,filterOn);
+%%%%%%%%%%%%%%%%%% Specific starting time (i.e., remove some initial data points %%%%%%%%%%%%%%%%%%%%%
+% startIdx = 0; 
+startTime = 0.135;
+startIdx = round(fsample*startTime);
 
 % Basic info of data
 trialLength = dataSize(1); %Number of recorded EEG response for each stimulus frequency
@@ -36,7 +40,6 @@ for Nhidx = 1:length(NhSeq)
         time = timeSeq(tidx);   
         % Artifical(sinusoidal template)
         sinTemplate = genSinTemplate(stimuFreq,fsample,time,Nh);
-        startIdx = 0; %%%%%%%%%%%%%%%%%%
         if strcmp(method,'TMSI'), tau = 24; r = 3; W = TukeysWeight(time*fsample,tau,r); end;
         rec = zeros(numSubject,1);
         for targetSubject = 1:numSubject
@@ -94,9 +97,9 @@ for Nhidx = 1:length(NhSeq)
     end
     row_header{numSubject+1} = 'Mean';
     row_header{numSubject+2} = 'Std';
-    filename = ['Result\' method '_' nameDataset '.xlsx'];
+    filename = ['Result\' method '_' nameDataset '_start' num2str(startTime*1000) '.xlsx'];
     xlswrite(filename,acc,sprintf('Nh = %d',Nh),'B2');     %Write data
     xlswrite(filename,col_header,sprintf('Nh = %d',Nh),'B1');     %Write column header
     xlswrite(filename,row_header,sprintf('Nh = %d',Nh),'A2');      %Write row header
 end
-save(['Result\' method '_' nameDataset '_confusion.mat'],'rec_confusion');
+save(['Result\' method '_' nameDataset  '_start' num2str(startTime*1000) '_confusion.mat'],'rec_confusion');
