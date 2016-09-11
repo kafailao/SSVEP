@@ -2,7 +2,7 @@ clearvars -except list method;clc;
 %% Testing parameter
 % time = 1;
 % Nh = 1;
-% method = 'MEC_AR';
+method = 'MSSA';
 % nameDataset = 'UCSDDataset';
 nameDataset = 'JanirDataset';
 filterOn = false;
@@ -76,6 +76,9 @@ for Nhidx = 1:length(NhSeq)
                             score = lrt(Xnew, sinTemplate);
                         case 'DPLS'
                             score = dpls(Xnew, sinTemplate);
+                        case 'MSSA'
+                            M = fsample/10;
+                            score = mssa_ssvep(Xnew,sinTemplate,M);
                     end     
                     [~,maxLoc] = max(score);
                     if maxLoc == freq, rec(targetSubject) = rec(targetSubject) + 1; end;

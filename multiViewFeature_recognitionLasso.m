@@ -2,13 +2,18 @@ clear;clc;
 NhSeq = 1:3;
 timeSeq = 0.5:0.5:3.5;
 nameDataset = 'JanirDataset';
+featureGenMethod = 'TMSI';
+if strcmp(featureGenMethod,'TMSI')
+    nF = 1;
+elseif strcmp(featureGenMethod,'ECCA3')
+    nF = 2;
+end
 method = 'lasso';
 subApproach = 'IndexMinMSE';
 numSubject = 28;
 subjectSeq = 1:numSubject;
 freqLength = 10;
 trialLength = 5;
-nF = 2;
 
 rec_BetaRatio = zeros(length(NhSeq),length(timeSeq),numSubject,freqLength);
 rec_confusion = zeros(length(NhSeq),length(timeSeq),numSubject,freqLength,freqLength);
@@ -17,7 +22,7 @@ for Nhidx = 1:length(NhSeq)
     acc = zeros(numSubject+2,length(timeSeq));
     for tidx = 1:length(timeSeq)
         time = timeSeq(tidx);
-        load(['Feature\' sprintf('ECCA3_%s_Nh%d_time%d.mat',nameDataset,Nh,time*10)]);        
+        load(['Feature\' sprintf('%s_%s_Nh%d_time%d.mat',featureGenMethod,nameDataset,Nh,time*10)]);        
         rec = zeros(numSubject,1);
         Beta = zeros((numSubject-1)*nF+1,freqLength);
         for targetSubject = 1:numSubject
@@ -73,9 +78,9 @@ for Nhidx = 1:length(NhSeq)
     end
     row_header{numSubject+1} = 'Mean';
     row_header{numSubject+2} = 'Std';
-    filename = ['Result\' method '_' subApproach '_' nameDataset '.xlsx'];
+    filename = ['Result\' featureGenMethod '_' method '_' subApproach '_' nameDataset '.xlsx'];
     xlswrite(filename,acc,sprintf('Nh = %d',Nh),'B2');     %Write data
     xlswrite(filename,col_header,sprintf('Nh = %d',Nh),'B1');     %Write column header
     xlswrite(filename,row_header,sprintf('Nh = %d',Nh),'A2');      %Write row header
 end
-save(['Result\' method '_' subApproach '_' nameDataset '_confusion.mat'],'rec_confusion','rec_BetaRatio');
+save(['Result\' featureGenMethod '_' method '_' subApproach '_' nameDataset '_confusion.mat'],'rec_confusion','rec_BetaRatio');
